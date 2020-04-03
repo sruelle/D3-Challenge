@@ -86,7 +86,115 @@ function yTextRefresh() {
 };
 
 yTextRefresh();
+var csvData;
+d3.csv('assets/data/data.csv').then(data => {
+    csvData = data;
+
+    var curX = 'poverty';
+    var curY = 'obesity';
+    var xMin;
+    var xMax;
+    var yMin;
+    var yMax;
+
+    var toolTip = d3
+        .tip()
+        .attr('class', 'd3-tip')
+        .html(d => {
+            var theX;
+            var theState = `<div>${d.state}</div>`;
+            var theY = `<div>${curY}: ${d[curY]} %</div>`;
+            if (curX === 'poverty') {
+                theX = `<div>${curX}: ${d[curX]} %</div>`;
+            } else {
+                theX = `<div>${curX}: ${parseFloat(d[curX]).toLocaleString('en')}</div>`;
+            }
+            return theState + theX + theY;
+        });
+    svg.call(toolTip);
+
+    function xMinMax() {
+        xMin = d3.min(data, d => parseFloat(d[curX]) * 0.9);
+        xMax = d3.min(data, d => parseFloat(d[curX]) * 1.1);
+    };
+
+    function yMinMax() {
+        yMin = d3.min(data, d => parseFloat(d[curY]) * 0.9);
+        yMax = d3.min(data, d => parseFloat(d[curY]) * 1.1);
+    };
+
+    xMinMax();
+    yMinMax();
+
+    var xScale = d3
+        .scaleLinear()
+        .domain([xMin,xMax])
+        .range([margin + labelArea, width - margin]);
+    
+    var yScale = d3
+        .scaleLinear()
+        .domain([yMin,yMax])
+        .range([height - margin - labelArea, margin]);
+
+    var xAxis = d3.axisBottom(xScale);
+    var yAxis = d3.axisLeft(yScale);
+
+    function tickCount() {
+        if (width <= 500) {
+            xAxis.ticks(5);
+            yAxis.ticks(5);
+        } else {
+            xAxis.ticks(10);
+            yAxis.ticks(10);
+        }
+    };
+    tickCount();
+
+    function labelChange(axis, clickedText) {
+        d3
+            .selectAll('.aText')
+            .filter('.'+axis)
+            .classed('active', false)
+            .classed('inactive', true);
+        
+        clickedText
+            .classed('inactive', false)
+            .classed('active', true);
+    };
+
+    svg 
+        .append('g')
+        .call(xAxis)
+        .attr('class', 'xAxis')
+        .attr('transform', `translate(0,${(height - margin - labelArea)})`);
+
+    svg 
+        .append('g')
+        .call(yAxis)
+        .attr('class','yAxis')
+        .attr('transform', `translate(${(margin + labelArea)},0)`);
 
 
+    var theCircles = svg
+        .selectAll('g theCircles')
+        .data(data)
+        .enter();
+
+    theCircles
+        .append('circle')
+        .attr('cx',d => xScale(d[curX]))
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+})
 
 
